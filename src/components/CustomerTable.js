@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { collection, getDocs,  deleteDoc, doc, query, where } from 'firebase/firestore/lite';
 import { Puff } from 'react-loader-spinner';
 import { db } from '../firebase';
+import { toast } from 'sonner';
 
 const CustomerTable = () => {
   const [customers, setCustomers] = useState([]);
@@ -42,12 +43,13 @@ const CustomerTable = () => {
         const customerRef = doc(db, 'Customer', docId);
         await deleteDoc(customerRef);
         console.log('Customer deleted:', customerId);
+        toast.success('Customer deleted successfully.')
         fetchCustomers(); // Refresh customers list
       } else {
-        console.log('No customer found with id:', customerId);
+        toast.error('No customer found.')
       }
     } catch (error) {
-      console.error('Error deleting customer:', error);
+      toast.error('Error deleting customer.')
     }
   };
 

@@ -4,9 +4,10 @@ import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase
 import Modal from 'react-modal';
 import { Puff } from 'react-loader-spinner';
 import { db } from '../firebase';
+import { toast } from 'sonner';
 
 const ProductTable = () => {
-    const [editModalOpen, setEditModalOpen] = useState(false);
+    const [editModaqlOpen, setEditModalOpen] = useState(false);
     const [editProduct, setEditProduct] = useState({
         categoryId: '',
         name: '',
@@ -48,9 +49,10 @@ const ProductTable = () => {
                 ...doc.data()
             }));
             setProducts(productsData);
+            setEditModalOpen(false)
+            setAddModalOpen(false)
         } catch (error) {
-            setNotification('Error fetching products:', error)
-            console.error('Error fetching products:', error);
+            toast.error('Error fetching products.')
         } finally {
             setLoading(false);
         }
@@ -90,7 +92,7 @@ const ProductTable = () => {
 
             // Add the product data to the Firestore collection
             await addDoc(collection(db, 'Product'), productData);
-            console.log('Product added:', productData);
+            toast.success('Product added Successfully.')
             setNewProduct({
                 categoryId: '',
                 name: '',
@@ -103,7 +105,7 @@ const ProductTable = () => {
             });
             fetchProducts(); // Refresh products list
         } catch (error) {
-            console.error('Error adding product:', error);
+            toast.error('Error adding product.')
         }
     };
 
@@ -121,12 +123,15 @@ const ProductTable = () => {
             if (categoryToDelete) {
                 const categoryRef = doc(db, 'Product', categoryToDelete.docId);
                 await deleteDoc(categoryRef);
+                toast.success('Prodcut Deleted Successfully.')
                 console.log('Product deleted:', productId);
                 fetchProducts()
             } else {
+                toast.error('Product not found.')
                 console.error('Product not found with id:', productId);
             }
         } catch (error) {
+            toast.error('Error deleting product.')
             console.error('Error deleting product:', error);
         }
     };
@@ -154,16 +159,18 @@ const ProductTable = () => {
                 await updateDoc(productRef, newData);
                 
                 console.log('Product updated:', productId);
-                
+                toast.success('Product updated Successfully.')
                 // Refresh products list
                 fetchProducts();
                 
                 // Close edit modal after updating
                 setEditModalOpen(false);
             } else {
+                toast.error('Product not found.')
                 console.error('Product not found with id:', productId);
             }
         } catch (error) {
+            toast.error('Error updating product.')
             console.error('Error updating product:', error);
         }
     };
@@ -239,20 +246,35 @@ const ProductTable = () => {
             height: '50vh',
         },
         modal: {
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "80%", // Make sure the modal container takes the full height of the viewport
+            width: "100vw", // Make sure the modal container takes the full width of the viewport
+            overflow: "auto", // Allow scrolling if content overflows
+        
             content: {
-                top: '50%',
-                left: '50%',
-                right: 'auto',
-                bottom: 'auto',
-                marginRight: '-50%',
-                transform: 'translate(-50%, -50%)',
-                width: '400px',
-                padding: '20px',
-                borderRadius: '8px',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                position: "relative", // Ensure it's positioned relative to the flex container
+                width: "400px",
+                maxWidth: "100%", // Ensure it doesn't overflow horizontally
+                padding: "20px",
+                height: '80%',
+                borderRadius: "8px",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+                overflowY: "auto", // Enable vertical scrolling within the modal
+                maxHeight: "calc(100vh - 40px)", // Ensure the modal doesn't overflow the viewport
             },
             overlay: {
-                backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                position: "fixed", // Ensure overlay covers the whole screen
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0, 0, 0, 0.75)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 1000, // Ensure overlay is above other content
             },
         },
         modalInput: {
@@ -398,7 +420,7 @@ const ProductTable = () => {
                 </tbody>
             </table>
             <Modal
-                isOpen={editModalOpen}
+                isOpen={editModaqlOpen}
                 onRequestClose={closeEditModal}
                 style={styles.modal}
             >
