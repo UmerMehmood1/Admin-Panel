@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore/lite';
+import { collection, getDocs, addDoc,setDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore/lite';
 import Modal from 'react-modal';
 import { Puff } from 'react-loader-spinner';
 import { db } from '../firebase';
@@ -77,9 +77,14 @@ const ProductTable = () => {
             alert('Please fill in all fields');
             return;
         }
-
+    
         try {
+            // Generate a new document reference with a unique ID
+            const productRef = doc(collection(db, 'Product'));
+            const productId = productRef.id;
+    
             const productData = {
+                id: productId,  // Include the generated ID in the product data
                 categoryId: newProduct.categoryId,
                 name: newProduct.name,
                 description: newProduct.description,
@@ -89,10 +94,12 @@ const ProductTable = () => {
                 weight: newProduct.weight,
                 cost: newProduct.cost,
             };
-
-            // Add the product data to the Firestore collection
-            await addDoc(collection(db, 'Product'), productData);
-            toast.success('Product added Successfully.')
+    
+            // Add the product data to the Firestore collection with the unique ID
+            await setDoc(productRef, productData);
+    
+            toast.success('Product added successfully.');
+            
             setNewProduct({
                 categoryId: '',
                 name: '',
@@ -105,10 +112,10 @@ const ProductTable = () => {
             });
             fetchProducts(); // Refresh products list
         } catch (error) {
-            toast.error('Error adding product.')
+            toast.error('Error adding product.');
         }
     };
-
+    
     const handleDeleteProduct = async (productId) => {
         try {
             const categoryCollection = collection(db, 'Product');
